@@ -9,11 +9,9 @@ class DirectorSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Review
         fields = '__all__'
-
 
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -46,3 +44,21 @@ class Director2Serializer(serializers.ModelSerializer):
 
     def get_movie_count(self, movie):
         return movie.all().count()
+
+
+class MovieCreateUptadeSerializer(serializers.Serializer):
+    title = serializers.CharField(min_length=2, max_length=10)
+    description = serializers.CharField()
+    duration = serializers.IntegerField()
+    director = serializers.CharField(max_length=30)
+
+
+class ReviewCreateUpdateSerializer(serializers.Serializer):
+    text = serializers.CharField(min_length=2, max_length=20)
+    movie = serializers.CharField(min_length=2, max_length=10)
+    author = serializers.CharField(min_length=2, max_length=20)
+    stars = serializers.IntegerField()
+
+
+class DirectorCreateUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(min_length=2, max_length=30)

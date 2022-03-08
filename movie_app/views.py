@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from movie_app.serializers import DirectorSerializer, MovieSerializer, ReviewSerializer
+from movie_app.serializers import DirectorSerializer, MovieSerializer, ReviewSerializer, MovieCreateUptadeSerializer, \
+    DirectorCreateUpdateSerializer, ReviewCreateUpdateSerializer
 from movie_app.models import Director, Movie, Review
 from rest_framework import status
 
@@ -12,7 +13,11 @@ def director_list_view(request):
         data = DirectorSerializer(directors, many=True).data
         return Response(data=data)
     elif request.method == 'POST':
-        print(request.data)
+        serializer = DirectorCreateUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
+
         name = request.data.get('name')
         director = Director.objects.create(name=name)
         return Response(data=DirectorSerializer(director).data,
@@ -44,7 +49,11 @@ def movie_list_view(request):
         data = MovieSerializer(movies, many=True).data
         return Response(data=data)
     elif request.method == 'POST':
-        print(request.data)
+        serializer = MovieCreateUptadeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
+
         title = request.data.get('title')
         description = request.data.get('description')
         duration = request.data.get('duration')
@@ -84,6 +93,10 @@ def review_list_view(request):
         data = ReviewSerializer(reviews, many=True).data
         return Response(data=data)
     elif request.method == 'POST':
+        serializer = ReviewCreateUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
         text = request.data.get('text')
         movie = request.data.get('movie')
         author = request.data.get('author')
