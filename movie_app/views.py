@@ -1,9 +1,13 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from movie_app.serializers import DirectorSerializer, MovieSerializer, ReviewSerializer, MovieCreateUptadeSerializer, \
     DirectorCreateUpdateSerializer, ReviewCreateUpdateSerializer
 from movie_app.models import Director, Movie, Review
 from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['GET', 'POST'])
@@ -127,3 +131,35 @@ def review_detail_view(request, id):
         review.stars = request.data.get('stars')
         review.save()
         return Response(data=ReviewSerializer(review).data)
+
+
+@api_view(['POSt'])
+def authorization(request):
+    if request.method == 'POST':
+        username = request.data.get('username')  # admin
+        password = request.data.get('password')  # admin
+        user = authenticate(username=username, password=password)
+        if user:
+            Token.objects.filter(user=user).delete()
+            token = Token.objects.create(user=user)
+            return Response(data={'key': token.key})
+        return Response(data={'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def registration(request):
+    if request.method == 'POST':
+        username = request.data.get('username')
+        password = request.data.get('password')
+        User.objects.create_user(username=username, password=password)
+        return Response(data={'massage': 'User created'},
+                        status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_reviews(request):
+    reviews = Review.objects.filter(author=request.user)
+    serializer = ReviewSerializer(reviews, many=True)
+    return Response(data=serializer.data)
